@@ -1,69 +1,98 @@
-// import './css/styles.css';
-// import debounce from 'lodash.debounce';
-// import Notiflix from 'notiflix';
-// import { fetchCountries } from './fetchCountries';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import './css/styles.css';
+import Notiflix from 'notiflix';
+import { fetchQuery } from './fetchImages';
+import cardTemplate from './templates/card.hbs';
 
-// const inputEl = document.getElementById('search-box');
-// const countryListEl = document.querySelector('.country-list');
-// const countryInfoEl = document.querySelector('.country-info');
+const lightbox = new SimpleLightbox('.gallery a', {
+  captions: true,
+  captionType: 'attr',
+  captionsData: 'alt',
+  captionPosition: 'bottom',
+  captionDelay: 250,
+});
 
-// const DEBOUNCE_DELAY = 300;
+const formEl = document.getElementById('search-form');
+const searchInputEl = document.querySelector('[name="searchQuery"]');
+const galleryEl = document.querySelector('.gallery');
+const loadMoreEl = document.querySelector('[class="load-more"]');
 
-// inputEl.addEventListener('input', debounce(handleInput, DEBOUNCE_DELAY));
+loadMoreEl.style.display = 'none';
 
-// function handleInput(e) {
-//   const inputValue = e.target.value.trim();
-//   if (inputValue === '') {
-//     cleanList();
-//     return;
-//   }
+let pageNumber = 1;
 
-//   fetchCountries(inputValue).then(data => {
-//     if (data.status === 404) {
-//       cleanList();
-//       Notiflix.Notify.failure('"Oops, there is no country with that name"');
-//     } else if (data.length > 10) {
-//       cleanList();
-//       Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
-//     } else if (data.length >= 2 && data.length <= 10) {
-//       renderCountryList(data);
-//     } else if (data.length === 1) {
-//       renderCountryInfo(data);
-//     }
-//   });
-// }
+formEl.addEventListener('submit', handleSubmit);
+loadMoreEl.addEventListener('click', handleClick);
 
-// function cleanList() {
-//   countryInfoEl.innerHTML = '';
-//   countryListEl.innerHTML = '';
-// }
+function handleSubmit(e) {
+  e.preventDefault();
 
-// function renderCountryList(countries) {
-//   countryInfoEl.innerHTML = '';
-//   const markup = countries
-//     .map(country => {
-//       return `<li class="country-list_item">
-//       <img class="country-list_img" src="${country.flags.svg}" width="30px">
-//       <b>${country.name.official}</b>
-//       </li>`;
+  pageNumber = 1;
+
+  const form = e.currentTarget;
+  const searchQuery = form.elements.searchQuery.value.trim();
+
+  if (searchQuery === '') {
+    galleryEl.innerHTML = '';
+    return;
+  }
+
+  fetchQuery(searchQuery, pageNumber)
+    .then(data => {
+      if (data.totalHits === 0) {
+        Notiflix.Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.',
+        );
+        galleryEl.innerHTML = '';
+        loadMoreEl.style.display = 'none';
+      } else {
+        Notiflix.Notify.info(`Hooray! We found ${data.totalHits} images.`);
+        renderCards(data);
+        loadMoreEl.style.display = 'block';
+      }
+    })
+    .catch(error => console.log(error));
+}
+
+function handleClick() {
+  const searchQuery = searchInputEl.value;
+  pageNumber += 1;
+  fetchQuery(searchQuery, pageNumber)
+    .then(data => {
+      if (data.hits.length === 0) {
+        loadMoreEl.style.display = 'none';
+        Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
+      }
+      renderMoreCards(data);
+    })
+    .catch(error => console.log(error));
+}
+
+function renderCards(cards) {
+  const markup = cards.hits
+    .map(card => {
+      return cardTemplate(card);
+    })
+    .join('');
+
+  galleryEl.innerHTML = markup;
+}
+
+function renderMoreCards(cards) {
+  const markup = cards.hits
+    .map(card => {
+      return cardTemplate(card);
+    })
+    .join('');
+
+  galleryEl.insertAdjacentHTML('beforeend', markup);
+}
+
+// function markup(datas) {
+//   return (markup = datas.hits
+//     .map(data => {
+//       return cardTemplate(data);
 //     })
-//     .join('');
-//   countryListEl.innerHTML = markup;
-// }
-
-// function renderCountryInfo(countries) {
-//   countryListEl.innerHTML = '';
-//   const markup = countries
-//     .map(country => {
-//       return `
-//   <img src="${country.flags.svg}" width="30px">
-//   <b>${country.name.official}</b>
-//   <p><b>Capital</b>: ${country.capital}</p>
-//   <p><b>Population</b>: ${country.population}</p>
-//   <p><b>Languages</b>: ${Object.values(country.languages)}</p>
-// `;
-//     })
-//     .join('');
-
-//   countryInfoEl.innerHTML = markup;
+//     .join(''));
 // }

@@ -7,27 +7,55 @@ body {
     'Open Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 10px;
   background-color: #fafafa;
   color: #212121;
   line-height: 1.5;
+  padding: 20px;
 }
 
-#search-box {
-  font: inherit;
-  padding: 8px;
-  max-width: 320px;
-  margin-bottom: 16px;
-}
-
-.country-list {
-  list-style: none;
-  padding-left: 0;
-}
-
-.country-list_item {
+.search-form {
+  display: flex;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
-.country-list_img {
-  margin-right: 10px;
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -5px;
+}
+
+.photo-card {
+  display: flex;
+  flex-direction: column;
+  width: calc((100% - 4 * 10px) / 4);
+  margin: 5px;
+}
+
+.photo-card_link {
+  text-decoration: none;
+  /* display: block; */
+  overflow: hidden;
+  height: 100%;
+}
+
+.photo-card_image {
+  display: block;
+  /* vertical-align: top; */
+  height: 80%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.info {
+  display: flex;
+}
+
+.info-item {
+  text-align: center;
+}
+
+.info-item:not(:last-child) {
+  margin-right: 5px;
 }
