@@ -16,18 +16,15 @@ const lightbox = new SimpleLightbox('.gallery a', {
 const formEl = document.getElementById('search-form');
 const searchInputEl = document.querySelector('[name="searchQuery"]');
 const galleryEl = document.querySelector('.gallery');
-const loadMoreEl = document.querySelector('[class="load-more"]');
+const target = document.querySelector('.target');
 
-loadMoreEl.style.display = 'none';
-
-let pageNumber = 1;
+let pageNumber = null;
 
 formEl.addEventListener('submit', handleSubmit);
-loadMoreEl.addEventListener('click', handleClick);
 
 function handleSubmit(e) {
   e.preventDefault();
-
+  observer.unobserve(target);
   pageNumber = 1;
 
   const form = e.currentTarget;
@@ -45,30 +42,16 @@ function handleSubmit(e) {
           'Sorry, there are no images matching your search query. Please try again.',
         );
         galleryEl.innerHTML = '';
-        loadMoreEl.style.display = 'none';
       } else {
         Notiflix.Notify.info(`Hooray! We found ${data.totalHits} images.`);
         renderCards(data);
-        loadMoreEl.style.display = 'block';
+        observer.observe(target);
       }
     })
     .catch(error => console.log(error));
 }
 
-function handleClick() {
-  const searchQuery = searchInputEl.value;
-  pageNumber += 1;
-  fetchQuery(searchQuery, pageNumber)
-    .then(data => {
-      if (data.hits.length === 0) {
-        loadMoreEl.style.display = 'none';
-        Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
-      }
-      renderMoreCards(data);
-    })
-    .catch(error => console.log(error));
-}
-
+/////////////////////// render cards
 function renderCards(cards) {
   const markup = cards.hits
     .map(card => {
@@ -89,10 +72,30 @@ function renderMoreCards(cards) {
   galleryEl.insertAdjacentHTML('beforeend', markup);
 }
 
-// function markup(datas) {
-//   return (markup = datas.hits
-//     .map(data => {
-//       return cardTemplate(data);
-//     })
-//     .join(''));
-// }
+/////////////////infinitive scroll
+
+const options = {
+  root: null,
+  rootMargin: '300px',
+  threshold: 0.25,
+};
+
+function updateList(entries) {
+  const searchQuery = searchInputEl.value;
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      pageNumber += 1;
+      fetchQuery(searchQuery, pageNumber)
+        .then(data => {
+          if (data.hits.length === 0) {
+            Notiflix.Notify.warning("We're sorry, but you've reached the end of search results.");
+          }
+          renderMoreCards(data);
+          lightbox.refresh();
+        })
+        .catch(error => console.log(error));
+    }
+  });
+}
+
+const observer = new IntersectionObserver(updateList, options);
