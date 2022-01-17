@@ -47,7 +47,6 @@ body {
 .photo-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
   width: calc((100% - 4 * 10px) / 4);
   margin: 5px;
   text-decoration: none;
@@ -60,6 +59,7 @@ body {
 
 .photo-card_image {
   display: block;
+  align-items: center;
   height: 200px;
   width: 350px;
   object-fit: cover;
@@ -67,12 +67,15 @@ body {
 
 .info {
   display: flex;
+  justify-content: space-around;
   padding-left: 5px;
   padding-right: 5px;
 }
 
 .info-item {
   text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
 .info-item:not(:last-child) {
