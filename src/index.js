@@ -45,6 +45,7 @@ function handleSubmit(e) {
       } else {
         Notiflix.Notify.info(`Hooray! We found ${data.totalHits} images.`);
         renderCards(data);
+        lightbox.refresh();
         observer.observe(target);
       }
     })
